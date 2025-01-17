@@ -139,6 +139,10 @@ class BusModel(VehicleModel):
                 "driving mass"
             ].sum()
 
+        self["capacity utilization"] = np.clip(
+            (self["average passengers"] / self["initial passengers capacity"]), 0, 1
+        )
+
         self.adjust_cost()
         self.set_electricity_consumption()
         self.set_costs()
