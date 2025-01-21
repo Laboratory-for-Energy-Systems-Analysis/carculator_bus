@@ -346,27 +346,28 @@ class InventoryBus(Inventory):
         # The charging station has a lifetime of 24 years
         # Hence, we calculate the lifetime of the bus
 
-        self.A[
-            np.ix_(
-                np.arange(self.iterations),
-                self.find_input_indices(("EV charger, level 3, plugin, 200 kW",)),
-                self.find_input_indices(
-                    contains=(f"transport, {self.vm.vehicle_type}", "BEV"),
-                    excludes=("motion", "opp"),
-                ),
+        if "BEV-depot" in self.scope["powertrain"]:
+            self.A[
+                np.ix_(
+                    np.arange(self.iterations),
+                    self.find_input_indices(("EV charger, level 3, plugin, 200 kW",)),
+                    self.find_input_indices(
+                        contains=(f"transport, {self.vm.vehicle_type}", "BEV"),
+                        excludes=("motion", "opp"),
+                    ),
+                )
+            ] = -1 / (
+                self.array.sel(
+                    parameter=["kilometers per year"],
+                    combined_dim=[
+                        d
+                        for d in self.array.coords["combined_dim"].values
+                        if "BEV-depot" in d
+                    ],
+                )
+                * 2
+                * 24
             )
-        ] = -1 / (
-            self.array.sel(
-                parameter=["kilometers per year"],
-                combined_dim=[
-                    d
-                    for d in self.array.coords["combined_dim"].values
-                    if "BEV-depot" in d
-                ],
-            )
-            * 2
-            * 24
-        )
 
         # Opportunity charging BEV buses
         # The charging station has a lifetime of 24 years
