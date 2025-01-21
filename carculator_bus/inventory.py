@@ -374,28 +374,29 @@ class InventoryBus(Inventory):
         # And 10 buses use it
         # Hence, we calculate the lifetime of the bus
 
-        self.A[
-            np.ix_(
-                np.arange(self.iterations),
-                self.find_input_indices(
-                    ("EV charger, level 3, with pantograph, 450 kW",)
-                ),
-                self.find_input_indices(
-                    contains=(f"transport, {self.vm.vehicle_type}", "BEV-opp")
-                ),
+        if "BEV-opp" in self.scope["powertrain"]:
+            self.A[
+                np.ix_(
+                    np.arange(self.iterations),
+                    self.find_input_indices(
+                        ("EV charger, level 3, with pantograph, 450 kW",)
+                    ),
+                    self.find_input_indices(
+                        contains=(f"transport, {self.vm.vehicle_type}", "BEV-opp")
+                    ),
+                )
+            ] = -1 / (
+                self.array.sel(
+                    parameter=["kilometers per year"],
+                    combined_dim=[
+                        d
+                        for d in self.array.coords["combined_dim"].values
+                        if "BEV-opp" in d
+                    ],
+                )
+                * 10
+                * 24
             )
-        ] = -1 / (
-            self.array.sel(
-                parameter=["kilometers per year"],
-                combined_dim=[
-                    d
-                    for d in self.array.coords["combined_dim"].values
-                    if "BEV-opp" in d
-                ],
-            )
-            * 10
-            * 24
-        )
 
         # In-motion charging BEV buses
         # The overhead lines have a lifetime of 40 years
