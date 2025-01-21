@@ -108,10 +108,7 @@ class BusModel(VehicleModel):
             self.set_component_masses()
             self.set_recuperation()
 
-            if self.energy_consumption:
-                self.override_ttw_energy()
-            else:
-                self.calculate_ttw_energy()
+            self.calculate_ttw_energy()
             self.set_ttw_efficiency()
 
             self.set_share_recuperated_energy()
@@ -543,6 +540,7 @@ class BusModel(VehicleModel):
                 "powertrain": self.array.powertrain,
                 "year": self.array.year,
                 "size": self.array.coords["size"],
+                "value": self.array.coords["value"],
             }
         )
 
