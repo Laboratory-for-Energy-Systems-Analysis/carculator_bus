@@ -108,10 +108,7 @@ class BusModel(VehicleModel):
             self.set_component_masses()
             self.set_recuperation()
 
-            if self.energy_consumption:
-                self.override_ttw_energy()
-            else:
-                self.calculate_ttw_energy()
+            self.calculate_ttw_energy()
             self.set_ttw_efficiency()
 
             self.set_share_recuperated_energy()
@@ -138,6 +135,10 @@ class BusModel(VehicleModel):
             diff = (self["driving mass"].sum().values - old_driving_mass) / self[
                 "driving mass"
             ].sum()
+
+        self["capacity utilization"] = np.clip(
+            (self["average passengers"] / self["initial passengers capacity"]), 0, 1
+        )
 
         self.adjust_cost()
         self.set_electricity_consumption()
@@ -539,6 +540,7 @@ class BusModel(VehicleModel):
                 "powertrain": self.array.powertrain,
                 "year": self.array.year,
                 "size": self.array.coords["size"],
+                "value": self.array.coords["value"],
             }
         )
 
