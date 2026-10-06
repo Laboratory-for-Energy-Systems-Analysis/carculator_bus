@@ -13,6 +13,7 @@ from carculator_utils.energy_consumption import (
     get_default_driving_cycle_name,
 )
 from carculator_utils.model import VehicleModel
+from carculator_utils.numerical import capital_recovery_factor
 
 from . import DATA_DIR
 
@@ -1135,14 +1136,16 @@ class BusModel(VehicleModel):
 
         self[to_markup] *= self["markup factor"]
 
-        # calculate costs per km:
-        amortisation_factor = self["interest rate"] + (
-            self["interest rate"]
-            / (
-                (np.array(1) + self["interest rate"]) ** self["lifetime kilometers"]
-                - np.array(1)
-            )
-        )
+        # Interest is annual: convert lifetime distance to years before
+        # annualizing capital. Unavailable zero-lifetime cells carry no annuity.
+        annual_km = self["kilometers per year"]
+        safe_annual_km = annual_km.where(annual_km > 0, 1)
+        lifetime_years = self["lifetime kilometers"] / safe_annual_km
+        valid_lifetime = (annual_km > 0) & (lifetime_years > 0)
+        safe_lifetime_years = lifetime_years.where(valid_lifetime, 1)
+        amortisation_factor = capital_recovery_factor(
+            self["interest rate"], safe_lifetime_years
+        ).where(valid_lifetime, 0)
 
         with open(DATA_DIR / "purchase_cost_params.yaml", "r") as stream:
             purchase_cost_list = yaml.safe_load(stream)["purchase"]
@@ -1154,7 +1157,7 @@ class BusModel(VehicleModel):
             self["purchase cost"]
             * amortisation_factor
             / self["average passengers"]
-            / self["kilometers per year"]
+            / safe_annual_km
         )
 
         # per passenger-km
@@ -1177,13 +1180,10 @@ class BusModel(VehicleModel):
         self["amortised component replacement cost"] = (
             (
                 self["component replacement cost"]
-                * (
-                    (np.array(1) - self["interest rate"]) ** self["lifetime kilometers"]
-                    / 2
-                )
+                * (1 + self["interest rate"]) ** (-safe_lifetime_years / 2)
             )
             * amortisation_factor
-            / self["kilometers per year"]
+            / safe_annual_km
             / self["average passengers"]
         )
 
