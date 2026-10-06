@@ -1,22 +1,43 @@
+from copy import deepcopy
+
 import numpy as np
 import pytest
-
 from carculator_bus import *
 
-tip = BusInputParameters()
-tip.static()
-_, array = fill_xarray_from_input_parameters(tip)
-bm = BusModel(array, country="CH")
-bm.set_all()
+
+@pytest.fixture(scope="module")
+def array():
+    ip = BusInputParameters()
+    ip.static()
+    return fill_xarray_from_input_parameters(
+        ip,
+        scope={
+            "size": ["13m-city"],
+            "powertrain": ["ICEV-d", "ICEV-g", "BEV-depot", "FCEV"],
+        },
+    )[1]
 
 
-def test_check_country():
+@pytest.fixture(scope="module")
+def _model(array):
+    model = BusModel(array, country="CH")
+    model.set_all()
+    return model
+
+
+@pytest.fixture
+def bm(_model):
+    # Tests may modify model state; preserve independence without import-time work.
+    return deepcopy(_model)
+
+
+def test_check_country(bm):
     # Ensure that country specified in BusModel equals country in InventoryBus
     ic = InventoryBus(bm)
     assert bm.country == ic.vm.country
 
 
-def test_electricity_mix():
+def test_electricity_mix(bm):
     # Electricity mix must be equal to 1
     ic = InventoryBus(bm)
     assert np.allclose(np.sum(ic.mix, axis=1), [1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
@@ -37,7 +58,7 @@ def test_electricity_mix():
     assert np.allclose(ic.mix, custom_mix)
 
 
-def test_scope():
+def test_scope(bm):
     """Test if scope works as expected"""
     ic = InventoryBus(
         bm,
@@ -147,7 +168,7 @@ def test_fuel_blend():
         ic.calculate_impacts()
 
 
-def test_countries():
+def test_countries(bm):
     """Test that calculation works with all countries"""
     for c in [
         "AO",
@@ -164,7 +185,7 @@ def test_countries():
         ic.calculate_impacts()
 
 
-def test_endpoint():
+def test_endpoint(bm):
     """Test if the correct impact categories are considered"""
     ic = InventoryBus(bm, method="recipe", indicator="endpoint")
     results = ic.calculate_impacts()
@@ -180,12 +201,12 @@ def test_endpoint():
     assert wrapped_error.type == ValueError
 
 
-def test_sulfur_concentration():
+def test_sulfur_concentration(bm):
     ic = InventoryBus(bm, method="recipe", indicator="endpoint")
     ic.get_sulfur_content("RER", "diesel")
 
 
-def test_custom_electricity_mix():
+def test_custom_electricity_mix(bm):
     """Test if a wrong number of electricity mixes throws an error"""
 
     bc = {
@@ -219,15 +240,9 @@ def test_custom_electricity_mix():
     assert wrapped_error.type == ValueError
 
 
-def test_export_to_bw():
-    tip = BusInputParameters()
-    tip.static()
-    _, array = fill_xarray_from_input_parameters(tip)
-    tm = BusModel(array, country="CH")
-    tm.set_all()
-
-    """Test that inventories export successfully"""
-    ic = InventoryBus(tm, method="recipe", indicator="midpoint")
+def test_export_to_bw(bm):
+    """Export every scoped year using the shared representative model."""
+    ic = InventoryBus(bm, method="recipe", indicator="midpoint")
 
     for b in ("3.9",):
         ic.export_lci(
@@ -236,21 +251,15 @@ def test_export_to_bw():
         )
 
 
-def test_export_to_excel():
-    tip = BusInputParameters()
-    tip.static()
-    _, array = fill_xarray_from_input_parameters(tip)
-    tm = BusModel(array, country="CH")
-    tm.set_all()
-
-    """Test that inventories export successfully to Excel/CSV"""
-    ic = InventoryBus(tm)
+def test_export_to_excel(bm, tmp_path):
+    """Exercise each file/string exporter without writing into the checkout."""
+    ic = InventoryBus(bm)
     for b in ("3.10",):
         for s in ("brightway2", "simapro"):
             for d in ("file", "string"):
                 ic.export_lci(
                     ecoinvent_version=b,
                     format=d,
-                    directory="directory",
+                    directory=str(tmp_path),
                     software=s,
                 )

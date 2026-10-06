@@ -1,25 +1,33 @@
-from pathlib import Path
+from copy import deepcopy
 
 import numpy as np
-import pandas as pd
-from carculator_utils.array import fill_xarray_from_input_parameters
-
+import pytest
 from carculator_bus import BusInputParameters, BusModel
 
-bip = BusInputParameters()
-bip.static()
-_, array = fill_xarray_from_input_parameters(bip)
-bm = BusModel(array)
-bm.set_all()
-
-# def test_energy_target_compliance():
-# ICEV-d and ICEV-g after 2020 should comply with given energy targets
-# In this case, 30% reduction in 2030 compared to 2020
-#    assert np.all((bm.array.sel(powertrain=["ICEV-d", "ICEV-g"], size="40t", year=2030, parameter="TtW energy")/
-#     bm.array.sel(powertrain=["ICEV-d", "ICEV-g"], size="40t", year=2020, parameter="TtW energy")) <= .7)
+from carculator_utils.array import fill_xarray_from_input_parameters
 
 
-def test_fuel_blends():
+@pytest.fixture(scope="module")
+def array():
+    ip = BusInputParameters()
+    ip.static()
+    return fill_xarray_from_input_parameters(ip, scope={})[1]
+
+
+@pytest.fixture(scope="module")
+def _model(array):
+    model = BusModel(array, country="CH")
+    model.set_all()
+    return model
+
+
+@pytest.fixture
+def bm(_model):
+    # Tests may modify model state; preserve independence without import-time work.
+    return deepcopy(_model)
+
+
+def test_fuel_blends(bm):
     # Shares of a fuel blend must equal 1
     for fuel in bm.fuel_blend:
         np.testing.assert_array_equal(
@@ -36,7 +44,7 @@ def test_fuel_blends():
         )
 
 
-def test_battery_mass():
+def test_battery_mass(bm):
     # Battery mass must equal cell mass and BoP mass
     assert np.allclose(
         bm.array.sel(
@@ -82,61 +90,13 @@ def test_battery_mass():
     )
 
 
-DATA = Path(__file__, "..").resolve() / "fixtures" / "bus_values.xlsx"
-OUTPUT = Path(__file__, "..").resolve() / "fixtures" / "test_model_results.xlsx"
-ref = pd.read_excel(DATA, index_col=0)
-
-
-def test_model_results():
-    list_powertrains = [
-        "ICEV-d",
-        "BEV-depot",
-        "BEV-opp",
-        "BEV-motion",
-        "ICEV-g",
-        "HEV-d",
-        "FCEV",
-    ]
-    list_sizes = ["13m-city", "18m"]
-    list_years = [
-        2020,
-    ]
-
-    l_res = []
-
-    for pwt in list_powertrains:
-        for size in list_sizes:
-            for year in list_years:
-                for param in bm.array.parameter.values:
-                    val = float(
-                        bm.array.sel(
-                            powertrain=pwt,
-                            size=size,
-                            year=year,
-                            parameter=param,
-                            value=0,
-                        ).values
-                    )
-
-                    try:
-                        ref_val = (
-                            ref.loc[
-                                (ref["powertrain"] == pwt)
-                                & (ref["size"] == size)
-                                & (ref["parameter"] == param),
-                                year,
-                            ]
-                            .values.astype(float)
-                            .item(0)
-                        )
-                    except:
-                        ref_val = 1
-
-                    _ = lambda x: np.where(ref_val == 0, 1, ref_val)
-                    diff = val / _(ref_val)
-                    l_res.append([pwt, size, year, param, val, ref_val, diff])
-
-    pd.DataFrame(
-        l_res,
-        columns=["powertrain", "size", "year", "parameter", "val", "ref_val", "diff"],
-    ).to_excel(OUTPUT)
+def test_model_results(bm):
+    # Assert useful physical invariants rather than writing an unchecked workbook.
+    selected = bm.array.sel(year=2020)
+    for parameter in ("curb mass", "driving mass", "TtW energy"):
+        values = selected.sel(parameter=parameter)
+        assert np.all(np.isfinite(values)), parameter
+        assert np.all(values >= 0), parameter
+    assert np.all(
+        selected.sel(parameter="driving mass") >= selected.sel(parameter="curb mass")
+    )

@@ -5,13 +5,14 @@ import numexpr as ne
 import numpy as np
 import xarray as xr
 import yaml
+from prettytable import PrettyTable
+
 from carculator_utils.background_systems import BackgroundSystemModel
 from carculator_utils.energy_consumption import (
     EnergyConsumptionModel,
     get_default_driving_cycle_name,
 )
 from carculator_utils.model import VehicleModel
-from prettytable import PrettyTable
 
 from . import DATA_DIR
 
@@ -22,27 +23,15 @@ class BusModel(VehicleModel):
     def set_battery_chemistry(self):
         # override default values for batteries
         # if provided by the user
-        self.energy_storage = {
-            "electric": {
-                x: "NMC-622"
-                for x in product(
-                    ["BEV-depot", "FCEV"],
-                    self.array.coords["size"].values,
-                    self.array.year.values,
-                )
-            },
-            "origin": "CN",
-        }
-        self.energy_storage["electric"].update(
-            {
-                x: "LTO"
-                for x in product(
-                    ["BEV-opp", "BEV-motion"],
-                    self.array.coords["size"].values,
-                    self.array.year.values,
-                )
-            }
-        )
+        electric = self.energy_storage.setdefault("electric", {})
+        for powertrain, size, year in product(
+            ["BEV-depot", "FCEV", "BEV-opp", "BEV-motion"],
+            self.array.coords["size"].values,
+            self.array.year.values,
+        ):
+            chemistry = "LTO" if powertrain in ("BEV-opp", "BEV-motion") else "NMC-622"
+            electric.setdefault((powertrain, size, year), chemistry)
+        self.energy_storage.setdefault("origin", "CN")
 
     def set_all(self):
         """
@@ -66,7 +55,6 @@ class BusModel(VehicleModel):
         :returns: Does not return anything. Modifies ``self.array`` in place.
         """
 
-        diff = 1
         arr = np.array([])
 
         # whether the vehicles are compliant
@@ -91,9 +79,8 @@ class BusModel(VehicleModel):
 
         print("Finding solutions for buses...")
 
-        while np.any(abs(diff) > 0.001):
+        for _ in self.iterate_sizing("driving mass", rtol=0.001):
             # driving mass from the previous iteration
-            old_driving_mass = self["driving mass"].sum().values
 
             if self.target_mass:
                 self.override_vehicle_mass()
@@ -131,10 +118,6 @@ class BusModel(VehicleModel):
             else:
                 arr = np.append(arr, [0])
                 non_compliant_vehicles = 0
-
-            diff = (self["driving mass"].sum().values - old_driving_mass) / self[
-                "driving mass"
-            ].sum()
 
         self["capacity utilization"] = np.clip(
             (self["average passengers"] / self["initial passengers capacity"]), 0, 1
