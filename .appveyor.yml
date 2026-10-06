@@ -7,9 +7,9 @@ environment:
   PYTHONIOENCODING: "UTF-8"
 
   matrix:
-    - PYTHON_VERSION: "3.7"
+    - PYTHON_VERSION: "3.12"
       PYTHON_ARCH: "64"
-      CONDA_PY: "37"
+      CONDA_PY: "312"
       CONDA_INSTALL_LOCN: "C:\\Miniconda37-x64"
 
 install:
@@ -19,7 +19,7 @@ install:
   - conda config --append channels pascallesage
   - conda config --append channels mcgibbon
   - conda update -y conda
-  - conda install -y -c conda-forge -c cmutel xarray pandas xlrd numpy pytest pytest-cov coveralls klausen numexpr bw2io atmos
+  - conda install -y python=%PYTHON_VERSION% -c conda-forge -c cmutel xarray pandas xlrd numpy pytest pytest-cov coveralls klausen numexpr bw2io atmos
   - pip install -e .
 
 test_script:

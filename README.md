@@ -24,6 +24,8 @@ See [the documentation](https://carculator_bus.readthedocs.io/en/latest/index.ht
 
 ## How to install?
 
+Python **3.12** is required (`>=3.12,<3.13`).
+
 For the latest version, using conda:
 
 ```bash
