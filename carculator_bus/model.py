@@ -80,7 +80,9 @@ class BusModel(VehicleModel):
 
         print("Finding solutions for buses...")
 
-        for _ in self.iterate_sizing("driving mass", rtol=0.001):
+        for _ in self.iterate_sizing(
+            "driving mass", rtol=0.001, mask=self.get_availability_mask()
+        ):
             # driving mass from the previous iteration
 
             if self.target_mass:
@@ -163,7 +165,7 @@ class BusModel(VehicleModel):
                         parameter="is_compliant",
                         year=[y for y in self.array.year.values if y > 2020],
                     )
-                ] = np.logical_not(non_compliant_vehicles).astype(int)
+                ] *= np.logical_not(non_compliant_vehicles).astype(int)
 
         # Display of table with passengers onboard
         t = PrettyTable([""] + self.array.coords["size"].values.tolist())
@@ -500,6 +502,11 @@ class BusModel(VehicleModel):
         """
         self.energy = self.ecm.motive_energy_per_km(
             engine_efficiency=self.get_energy_efficiency_override("engine efficiency"),
+            engine_efficiency_factor=xr.where(
+                self.array.powertrain == "ICEV-g",
+                1 - self["CNG engine efficiency correction factor"],
+                1.0,
+            ).transpose("size", "powertrain", "year", "value"),
             transmission_efficiency=self.get_energy_efficiency_override(
                 "transmission efficiency"
             ),
@@ -538,18 +545,6 @@ class BusModel(VehicleModel):
             self.override_ttw_energy()
 
         distance = self.energy.sel(parameter="velocity").sum(dim="second") / 1000
-
-        # Correction for CNG trucks
-        if "ICEV-g" in self.array.powertrain.values:
-            self.energy.loc[
-                dict(parameter="engine efficiency", powertrain="ICEV-g")
-            ] *= (
-                1
-                - self.array.sel(
-                    parameter="CNG engine efficiency correction factor",
-                    powertrain="ICEV-g",
-                )
-            ).T.values
 
         self["transmission efficiency"] = (
             np.ma.array(
@@ -1452,69 +1447,28 @@ class BusModel(VehicleModel):
         else:
             return response / response.sel(value="reference")
 
+    def get_availability_mask(self):
+        """Return the existing technology/year availability policy per cell.
+
+        Unsupported configurations do not constrain convergence of active buses.
+        This mask does not relax mass limits or convergence for active vehicles.
+        """
+        available = xr.ones_like(self["driving mass"], dtype=bool)
+        pwt = self.array.powertrain
+        size = self.array.coords["size"]
+        electric = pwt.isin(["BEV-depot", "BEV-opp", "BEV-motion"])
+        available &= ~(electric & (self.array.year < 2020))
+        available &= ~(size.str.contains("coach") & pwt.isin(["BEV-opp", "BEV-motion"]))
+        available &= ~(
+            (pwt == "BEV-motion")
+            & size.isin(["13m-city-double", "13m-coach", "13m-coach-double"])
+        )
+        return available
+
     def remove_energy_consumption_from_unavailable_vehicles(self):
-        """
-        This method sets the energy consumption of vehicles that are not available to zero.
-        """
-
-        # we flag BEV powertrains before 2020
-
-        pwts = [
-            pt
-            for pt in [
-                "BEV-depot",
-                "BEV-opp",
-                "BEV-motion",
-            ]
-            if pt in self.array.coords["powertrain"].values
-        ]
-
-        years = [y for y in self.array.year.values if y < 2020]
-
-        if years:
-            self.array.loc[
-                dict(
-                    parameter="TtW energy",
-                    powertrain=pwts,
-                    year=years,
-                )
-            ] = 0
-
-        # and also coach buses with BEV-opp or BEV-motion powertrains
-        pwts = [
-            pt
-            for pt in [
-                "BEV-opp",
-                "BEV-motion",
-            ]
-            if pt in self.array.coords["powertrain"].values
-        ]
-        sizes = [s for s in self.array.coords["size"].values if "coach" in s.lower()]
-
-        if pwts and sizes:
-            self.array.loc[
-                dict(
-                    parameter="TtW energy",
-                    powertrain=pwts,
-                    size=sizes,
-                )
-            ] = 0
-
-        # remove double-deck BEV-motion buses
-        if "BEV-motion" in self.array.coords["powertrain"].values:
-            for s in [
-                "13m-city-double",
-                "13m-coach",
-                "13m-coach-double",
-            ]:
-                if s in self.array.coords["size"].values:
-                    self.array.loc[
-                        dict(
-                            parameter="TtW energy",
-                            powertrain="BEV-motion",
-                            size=s,
-                        )
-                    ] = 0
+        """Apply technology availability and actual driving-mass compliance."""
+        self["is_available"] = self.get_availability_mask()
+        self["TtW energy"] *= self["is_available"]
 
         # A planning assumption about peak occupancy is not a physical limit
         # on the explicitly requested driving mass. Retain it as a diagnostic.
