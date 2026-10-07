@@ -1,8 +1,8 @@
 {
-  "method": "2025 interpolated inputs with explicit component-efficiency priors; not universally measurement-calibrated",
+  "method": "2025 interpolated inputs with explicit component-efficiency priors; not universally measurement-calibrated; 13m-city BEV base auxiliaries calibrated to Gillig and transferred with engineering uncertainty",
   "source_sha256": "6f3e209dd2109b7a520ef01b71ea1ab522ec442968f1a0a485607b11566d069a",
   "original_record_count": 1508,
-  "new_record_count": 256,
+  "new_record_count": 258,
   "records": {
     "baseline-2025-0000-CNG engine efficiency correction factor": {
       "endpoint_records": [
@@ -1776,6 +1776,35 @@
       "fitted": false,
       "replaces": "baseline-2025-0079-battery discharge efficiency",
       "source": "https://github.com/NatLabRockies/fastsim/blob/63808be8d09cb191047b536a2b9b7f883dbbd0c3/python/fastsim/resources/vehdb/2022_Tesla_Model_3_RWD.csv"
+    },
+    "baseline-2025-0022-auxiliary power base demand-other-sizes": {
+      "endpoint_records": [
+        "1288-2020-auxiliary power base demand",
+        "1289-2030-auxiliary power base demand"
+      ],
+      "missing_endpoint": false
+    },
+    "calibrated-2025-13m-city-bev-auxiliary-power": {
+      "method": "Single-bus auxiliary calibration transferred to generic 2025 13m-city BEVs by user decision",
+      "fitted": true,
+      "source": "https://www.altoonabustest.psu.edu/bus-details.aspx?BN=2020-05",
+      "training_cycles": [
+        "OCBC",
+        "HD-UDDS"
+      ],
+      "held_out_cycle": "Manhattan",
+      "calibration_motor_rating_kW": [
+        262.5,
+        562.5
+      ],
+      "conditional_fitted_auxiliary_W": [
+        8279.74471795241,
+        8393.132456835921
+      ],
+      "adopted_W": 8300,
+      "uncertainty_method": "Triangular engineering prior with +/-25% bounds; not a fitted confidence interval",
+      "hvac": "off; separate from base auxiliaries",
+      "replaces": "baseline-2025-0022-auxiliary power base demand"
     }
   }
 }

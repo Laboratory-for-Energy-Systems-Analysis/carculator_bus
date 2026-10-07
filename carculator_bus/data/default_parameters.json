@@ -42785,18 +42785,13 @@
         "amount": 5000.0,
         "category": "Auxiliaries",
         "powertrain": [
-            "BEV-depot",
-            "BEV-motion",
-            "BEV-opp",
             "FCEV",
             "HEV-d",
             "ICEV-d",
             "ICEV-g"
         ],
         "sizes": [
-            "13m-city",
-            "13m-city-double",
-            "18m"
+            "13m-city"
         ],
         "year": 2025,
         "name": "auxiliary power base demand",
@@ -49335,5 +49330,58 @@
         "kind": "distribution",
         "uncertainty_type": 1,
         "loc": 0.9848857801796105
+    },
+    "baseline-2025-0022-auxiliary power base demand-other-sizes": {
+        "amount": 5000.0,
+        "category": "Auxiliaries",
+        "powertrain": [
+            "BEV-depot",
+            "BEV-motion",
+            "BEV-opp",
+            "FCEV",
+            "HEV-d",
+            "ICEV-d",
+            "ICEV-g"
+        ],
+        "sizes": [
+            "13m-city-double",
+            "18m"
+        ],
+        "year": 2025,
+        "name": "auxiliary power base demand",
+        "unit": "W",
+        "importance": "Limited",
+        "source": "https://www.sciencedirect.com/science/article/pii/S0360544218324307#bib41",
+        "comment": "2025 baseline: linear interpolation of the effective 2020 and 2030 records, before empirical calibration. Triangular modes and bounds are interpolated. Endpoint records: ('1288-2020-auxiliary power base demand', '1289-2030-auxiliary power base demand'). Includes lightning, passenger information systems, ticket vending machine, charging of 24V onboard batteries, air compressor and hydraulic pump",
+        "status": "To be improved",
+        "kind": "distribution",
+        "uncertainty_type": 5,
+        "loc": 5000.0,
+        "minimum": 3750.0,
+        "maximum": 6250.0
+    },
+    "calibrated-2025-13m-city-bev-auxiliary-power": {
+        "amount": 8300.0,
+        "category": "Auxiliaries",
+        "powertrain": [
+            "BEV-depot",
+            "BEV-motion",
+            "BEV-opp"
+        ],
+        "sizes": [
+            "13m-city"
+        ],
+        "year": 2025,
+        "name": "auxiliary power base demand",
+        "unit": "W",
+        "importance": "Limited",
+        "source": "https://www.altoonabustest.psu.edu/bus-details.aspx?BN=2020-05",
+        "comment": "2025 generic 13m-city BEV transfer from Gillig Altoona 2020-05. Rounded 8.3 kW base auxiliary demand fitted on OCBC and HD-UDDS; Manhattan held out. Fits span 8279.7-8393.1 W for reported motor-rating bounds 262.5-562.5 kW. HVAC was off; this excludes separately modelled heating/cooling. Triangular bounds +/-25% (6225-10375 W) retain the previous relative engineering uncertainty; they are NOT an empirical confidence interval. Single-bus transfer to depot, opportunity and in-motion charging is an assumption; measured vehicle-specific inputs should override it.",
+        "status": "Calibrated single-bus transfer prior",
+        "kind": "distribution",
+        "uncertainty_type": 5,
+        "loc": 8300.0,
+        "minimum": 6225.0,
+        "maximum": 10375.0
     }
 }
