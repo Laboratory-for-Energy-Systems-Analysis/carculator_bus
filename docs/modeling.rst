@@ -519,14 +519,15 @@ The energy consumption model is similar to that of passenger cars: the sum of th
 resistances at the wheel is calculated, after which friction-induced losses along the drivetrain are
 considered to obtain the energy required at the tank level.
 
-VECTO’s simulations are again used to calibrate the engine and transmission efficiency of diesel
-and compressed gas buses. Similar to the modeling of delivery, medium- and heavy-duty trucks,
+The original study used VECTO simulations to calibrate engine and transmission
+efficiency for diesel buses; gas-bus corrections were derived separately. Similar to the modeling of delivery, medium- and heavy-duty trucks,
 the relation between the efficiency of the drivetrain components (i.e., engine, gearbox, and axle)
 and the power load-to-peak-power ratio is used.
 
 A calibration exercise with VECTO for the diesel-powered 13m city bus is shown in :ref:`Figure 9 <figure-9>`.
-After calibration, the tank-to-wheel energy consumption value obtained from VECTO and
-``carculator_bus`` for diesel-powered buses differ by less than 1 percent over the entire driving cycle.
+The original calibration reported less than 1 percent difference over that
+cycle. This is historical simulator agreement, not an independent measured
+validation or a guarantee for the revised model and every bus configuration.
 
 .. _figure-9:
 
@@ -535,7 +536,7 @@ After calibration, the tank-to-wheel energy consumption value obtained from VECT
 
    *Figure 9: Calibration of carculator_bus energy model against VECTO simulations for a single deck 13m long diesel bus (first 1’000 seconds shown)*
 
-Unfortunately, VECTO does not have a model for compressed gas-powered buses.
+The original study did not use a VECTO model for compressed gas-powered buses.
 Therefore, correction factors for fuel efficiency relative to diesel buses are derived from
 HBEFA 4.1 and presented in :ref:`Table 9 <table-9>`. They are calculated from the average difference in
 fuel efficiency between compressed gas and diesel buses across similar traffic situations and size classes.
@@ -1004,6 +1005,14 @@ All while considering the **following constraints**:
 
 Validation
 ----------
+
+.. note::
+
+   For the current 2025 calibration status, measurement boundaries, temporal
+   update and remaining evidence gaps, see :doc:`validity`. Historical figures
+   below retain their original configurations and do not constitute a new
+   validation of the revised defaults.
+
 
 Manufacturer’s specifications
 *****************************
