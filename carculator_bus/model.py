@@ -1483,7 +1483,6 @@ class BusModel(VehicleModel):
         )
         self["is_compliant"] = self["driving mass"] <= self["gross mass"] + 1e-6
         self["TtW energy"] *= self["is_compliant"]
-        # Keep reported supply demand consistent with unavailable outputs.
-        available = self["TtW energy"] != 0
-        self["electricity consumption"] *= available
-        self["fuel consumption"] *= available
+        self.mask_energy_outputs(
+            self.get_availability_mask() & (self["is_compliant"] != 0)
+        )
