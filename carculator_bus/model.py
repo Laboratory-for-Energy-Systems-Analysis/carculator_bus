@@ -63,7 +63,7 @@ class BusModel(VehicleModel):
         # whether the technology is available for the given year
         self["is_available"] = True
 
-        if not self.cycle:
+        if self.cycle is None:
             self.cycle = get_default_driving_cycle_name("bus")
 
         self.ecm = EnergyConsumptionModel(
@@ -499,13 +499,19 @@ class BusModel(VehicleModel):
         as to move the car. The sum is stored under the parameter label "TtW energy" in :attr:`self.array`.
         """
         self.energy = self.ecm.motive_energy_per_km(
+            engine_efficiency=self.get_energy_efficiency_override("engine efficiency"),
+            transmission_efficiency=self.get_energy_efficiency_override(
+                "transmission efficiency"
+            ),
             driving_mass=self["driving mass"],
             rr_coef=self["rolling resistance coefficient"],
             drag_coef=self["aerodynamic drag coefficient"],
             frontal_area=self["frontal area"],
             electric_motor_power=self["electric power"],
             engine_power=self["power"],
+            combustion_engine_power=self["combustion power"],
             recuperation_efficiency=self["recuperation efficiency"],
+            electric_motor_efficiency=self.get_electric_motor_efficiency(),
             aux_power=self["auxiliary power base demand"],
             battery_charge_eff=self["battery charge efficiency"],
             battery_discharge_eff=self["battery discharge efficiency"],
@@ -577,27 +583,8 @@ class BusModel(VehicleModel):
             / distance
         ).T
 
-        # saved_TtW_energy_by_recuperation = recuperated energy
-        # * electric motor efficiency * electric transmission efficiency
-        # / (engine efficiency * transmission efficiency)
-
-        self["TtW energy"] += (
-            (
-                self.energy.sel(parameter="recuperated energy").sum(dim="second")
-                / distance
-            ).T
-            * self.array.sel(parameter="engine efficiency")
-            * self.array.sel(parameter="transmission efficiency")
-            / (
-                self["engine efficiency"]
-                * self["transmission efficiency"]
-                * np.where(
-                    self["fuel cell system efficiency"] == 0,
-                    1,
-                    self["fuel cell system efficiency"],
-                )
-            )
-        )
+        self["TtW energy"] += self.get_regeneration_credit()
+        self.set_battery_energy_balance()
 
         self["TtW energy, combustion mode"] = self["TtW energy"] * (
             self["combustion power share"] > 0
@@ -1048,6 +1035,10 @@ class BusModel(VehicleModel):
                 / 3.6
                 * 0.06
             )
+
+        # A measured/user-selected capacity overrides service-based sizing.
+        if "capacity" in self.energy_storage:
+            self.override_battery_capacity()
 
         self["battery cell mass"] = self["electric energy stored"] / _(
             self["battery cell energy density"]
@@ -1525,15 +1516,20 @@ class BusModel(VehicleModel):
                         )
                     ] = 0
 
-        # if the mass allowance left
-        # if not enough to welcome the average passenger number +50%
-        # then the bus is too heavy as undersized for peak times
-        self["TtW energy"] = np.where(
+        # A planning assumption about peak occupancy is not a physical limit
+        # on the explicitly requested driving mass. Retain it as a diagnostic.
+        self.peak_passenger_capacity_sufficient = (
             np.floor(
                 (self["gross mass"] - self["curb mass"])
-                / self["average passenger mass"]
+                / self["average passenger mass"].where(
+                    self["average passenger mass"] > 0, 1
+                )
             )
-            < self["average passengers"] * 1.5,
-            0,
-            self["TtW energy"],
+            >= self["average passengers"] * 1.5
         )
+        self["is_compliant"] = self["driving mass"] <= self["gross mass"] + 1e-6
+        self["TtW energy"] *= self["is_compliant"]
+        # Keep reported supply demand consistent with unavailable outputs.
+        available = self["TtW energy"] != 0
+        self["electricity consumption"] *= available
+        self["fuel consumption"] *= available
