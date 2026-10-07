@@ -40,17 +40,13 @@ def test_check_country(bm):
 def test_electricity_mix(bm):
     # Electricity mix must be equal to 1
     ic = InventoryBus(bm)
-    assert np.allclose(np.sum(ic.mix, axis=1), [1.0, 1.0, 1.0, 1.0, 1.0, 1.0])
+    assert np.allclose(np.sum(ic.mix, axis=1), np.ones(bm.array.sizes["year"]))
 
     # If we pass a custom electricity mix, check that it is used
-    custom_mix = [
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-    ]
+    custom_mix = np.zeros((bm.array.sizes["year"], 21))
+    custom_mix[:, 0] = 1
+    custom_mix[-1, 0] = 0
+    custom_mix[-1, 9] = 1
 
     bc = {"custom electricity mix": custom_mix}
     ic = InventoryBus(bm, background_configuration=bc)
@@ -93,17 +89,17 @@ def test_fuel_blend():
         "diesel": {
             "primary": {
                 "type": "diesel",
-                "share": [0.93, 0.93, 0.93, 0.93, 0.93, 0.93],
+                "share": np.full(array.sizes["year"], 0.93),
             },
             "secondary": {
                 "type": "diesel - biodiesel - cooking oil",
-                "share": [0.07, 0.07, 0.07, 0.07, 0.07, 0.07],
+                "share": np.full(array.sizes["year"], 0.07),
             },
         },
         "methane": {
             "primary": {
                 "type": "methane - biomethane - sewage sludge",
-                "share": [1, 1, 1, 1, 1, 1],
+                "share": np.full(array.sizes["year"], 1),
             }
         },
     }
@@ -115,13 +111,15 @@ def test_fuel_blend():
 
     assert np.allclose(
         tm.fuel_blend["diesel"]["primary"]["share"],
-        [0.93, 0.93, 0.93, 0.93, 0.93, 0.93],
+        np.full(array.sizes["year"], 0.93),
     )
     assert np.allclose(
         tm.fuel_blend["diesel"]["secondary"]["share"],
-        [0.07, 0.07, 0.07, 0.07, 0.07, 0.07],
+        np.full(array.sizes["year"], 0.07),
     )
-    assert np.allclose(tm.fuel_blend["methane"]["primary"]["share"], [1, 1, 1, 1, 1, 1])
+    assert np.allclose(
+        tm.fuel_blend["methane"]["primary"]["share"], np.full(array.sizes["year"], 1)
+    )
     assert np.sum(tm.fuel_blend["methane"]["secondary"]["share"]) == 0
 
     ic.calculate_impacts()
@@ -156,10 +154,14 @@ def test_fuel_blend():
     ]:
         fb = {
             "diesel": {
-                "primary": {"type": fuels[0], "share": [1, 1, 1, 1, 1, 1]},
+                "primary": {"type": fuels[0], "share": np.full(array.sizes["year"], 1)},
             },
-            "hydrogen": {"primary": {"type": fuels[1], "share": [1, 1, 1, 1, 1, 1]}},
-            "methane": {"primary": {"type": fuels[2], "share": [1, 1, 1, 1, 1, 1]}},
+            "hydrogen": {
+                "primary": {"type": fuels[1], "share": np.full(array.sizes["year"], 1)}
+            },
+            "methane": {
+                "primary": {"type": fuels[2], "share": np.full(array.sizes["year"], 1)}
+            },
         }
 
         tm = BusModel(array, country="CH", fuel_blend=fb)

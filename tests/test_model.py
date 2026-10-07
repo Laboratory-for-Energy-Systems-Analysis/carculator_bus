@@ -33,7 +33,7 @@ def test_fuel_blends(bm):
         np.testing.assert_array_equal(
             np.array(bm.fuel_blend[fuel]["primary"]["share"])
             + np.array(bm.fuel_blend[fuel]["secondary"]["share"]),
-            [1, 1, 1, 1, 1, 1],
+            np.ones(bm.array.sizes["year"]),
         )
 
     # A fuel cannot be specified both as primary and secondary fuel
