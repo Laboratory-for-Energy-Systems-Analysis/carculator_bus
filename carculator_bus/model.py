@@ -5,8 +5,6 @@ import numexpr as ne
 import numpy as np
 import xarray as xr
 import yaml
-from prettytable import PrettyTable
-
 from carculator_utils.background_systems import BackgroundSystemModel
 from carculator_utils.energy_consumption import (
     EnergyConsumptionModel,
@@ -14,6 +12,7 @@ from carculator_utils.energy_consumption import (
 )
 from carculator_utils.model import VehicleModel
 from carculator_utils.numerical import capital_recovery_factor
+from prettytable import PrettyTable
 
 from . import DATA_DIR
 
@@ -167,6 +166,12 @@ class BusModel(VehicleModel):
                     )
                 ] *= np.logical_not(non_compliant_vehicles).astype(int)
 
+        # Display the reference, or the first available sample after selection.
+        display_value = (
+            "reference"
+            if "reference" in self.array.coords["value"]
+            else self.array.coords["value"].values[0]
+        )
         # Display of table with passengers onboard
         t = PrettyTable([""] + self.array.coords["size"].values.tolist())
 
@@ -182,11 +187,7 @@ class BusModel(VehicleModel):
                             parameter=["average passengers"],
                             powertrain=pt,
                             year=y,
-                            value=(
-                                "reference"
-                                if "reference" in self.array.coords["value"]
-                                else 0
-                            ),
+                            value=display_value,
                             size=s,
                         ).values,
                         1,
@@ -198,11 +199,7 @@ class BusModel(VehicleModel):
                             parameter="is_compliant",
                             powertrain=pt,
                             year=y,
-                            value=(
-                                "reference"
-                                if "reference" in self.array.coords["value"]
-                                else 0
-                            ),
+                            value=display_value,
                             size=s,
                         ).values,
                         val,
@@ -215,11 +212,7 @@ class BusModel(VehicleModel):
                             parameter="has_schedule_issue",
                             powertrain=pt,
                             year=y,
-                            value=(
-                                "reference"
-                                if "reference" in self.array.coords["value"]
-                                else 0
-                            ),
+                            value=display_value,
                             size=s,
                         ).values,
                         "O",
@@ -232,11 +225,7 @@ class BusModel(VehicleModel):
                             parameter="is_too_heavy",
                             powertrain=pt,
                             year=y,
-                            value=(
-                                "reference"
-                                if "reference" in self.array.coords["value"]
-                                else 0
-                            ),
+                            value=display_value,
                             size=s,
                         ).values,
                         "X",
@@ -249,11 +238,7 @@ class BusModel(VehicleModel):
                             parameter="is_available",
                             powertrain=pt,
                             year=y,
-                            value=(
-                                "reference"
-                                if "reference" in self.array.coords["value"]
-                                else 0
-                            ),
+                            value=display_value,
                             size=s,
                         ).values,
                         val,
@@ -405,38 +390,8 @@ class BusModel(VehicleModel):
         interpolation between years.
         """
 
-        n_iterations = self.array.sizes["value"]
+        cost_factor, cost_factor_fcev = self._get_cost_factors()
         years = self.array.year
-
-        # If uncertainty is not considered, teh cost factor equals 1.
-        # Otherwise, a variability of +/-30% is added.
-
-        if n_iterations == 1:
-            cost_factor = 1
-
-            # reflect a scaling effect for fuel cells
-            # according to
-            # FCEV trucks should cost the triple of an ICEV-d in 2020
-            cost_factor_fcev = 5
-        else:
-            if "reference" in self.array.value.values:
-                cost_factor = np.ones((n_iterations, 1))
-                cost_factor_fcev = np.full((n_iterations, 1), 5)
-            else:
-                cost_factor = np.random.triangular(0.7, 1, 1.3, (n_iterations, 1))
-                cost_factor_fcev = np.random.triangular(3, 5, 6, (n_iterations, 1))
-
-        # Broadcast by labels: one cost factor per sample, shared across years.
-        cost_factor = xr.DataArray(
-            np.asarray(cost_factor).ravel(),
-            dims="value",
-            coords={"value": self.array.value},
-        )
-        cost_factor_fcev = xr.DataArray(
-            np.asarray(cost_factor_fcev).ravel(),
-            dims="value",
-            coords={"value": self.array.value},
-        )
 
         # Correction of hydrogen tank cost, per kg
         if "FCEV" in self.array.powertrain.values:
