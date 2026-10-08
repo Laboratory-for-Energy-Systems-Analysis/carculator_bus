@@ -76,6 +76,11 @@ they are not independent measurements for every vehicle configuration.
 boundary before comparing energy outputs. Availability-masked zeroes do not
 represent physically zero consumption.
 
+Charger-equipped buses deliberately include **at least one replacement battery**
+over service life, even if cycling demand alone implies none. The initial pack
+is additional. This is a fleet-life assumption, not a calibrated ageing model;
+see [battery replacement accounting](docs/modeling.rst#current-battery-replacement-policy).
+
 Supported background scenarios are `SSP2-NPi`, `SSP2-PkBudg1000`,
 `SSP2-PkBudg650`, and `static`. ReCiPe supports midpoint/endpoint and EF midpoint.
 Use fresh model instances for independent cases. `inputs.stochastic(n, seed=...)`

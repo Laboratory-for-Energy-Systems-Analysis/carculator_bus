@@ -604,21 +604,18 @@ class BusModel(VehicleModel):
         ).T
 
     def set_battery_fuel_cell_replacements(self):
+        """Apply the bus battery and fuel-cell replacement assumptions.
+
+        Charger-equipped buses carry at least one replacement energy battery
+        over their service life, even when cycling demand alone implies none.
+        This deliberate fleet-life assumption is retained independently of the
+        two-wheeler policy; it is not a calibrated calendar-ageing model.
+        The throughput-based battery factor is clipped to [1, 3] and may be
+        fractional. Inventory supply and disposal include 1 + that factor,
+        accounting for the initial pack as well. Costs include replacement packs.
+        Fuel-cell replacements use their separate lifetime-hours calculation
+        and are rounded up.
         """
-        These methods calculate the number of replacement batteries needed
-        to match the vehicle lifetime. Given the chemistry used,
-        the cycle life is known. Given the lifetime kilometers and
-        the kilometers per charge, the number of charge cycles can be inferred.
-
-        If the battery lifetime surpasses the vehicle lifetime,
-        100% of the burden of the battery production is allocated to the vehicle.
-        Also, the number of replacement is rounded up.
-        This means that the entirety of the battery replacement is allocated
-        to the vehicle (and not to its potential second life).
-
-        """
-        # Number of replacement of battery is rounded *up*
-
         _ = lambda array: np.where(array == 0, 1, array)
 
         self["battery lifetime replacements"] = np.clip(

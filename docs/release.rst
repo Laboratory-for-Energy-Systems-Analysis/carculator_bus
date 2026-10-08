@@ -16,3 +16,7 @@ When upgrading from an earlier version:
 
 The :download:`changelog <../CHANGELOG.md>` lists the changes in each version.
 See :doc:`validity` for calibration evidence and the scope of model validation.
+
+Bus battery replacement behavior is unchanged: charger-equipped buses retain
+at least one replacement over service life, in addition to their initial pack.
+See :ref:`bus-battery-replacement-policy` for this explicit fleet-life assumption.

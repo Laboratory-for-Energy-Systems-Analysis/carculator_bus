@@ -826,7 +826,51 @@ capacity is added for emergency or unexpected use.
       over opportunity- or motion-charging buses. In 2018, China accounted for 98% of the new
       battery-electric buses registered globally.
 
-The expected battery lifetime (and the need for replacement) is based on the expected battery
+.. _bus-battery-replacement-policy:
+
+Current battery replacement policy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+**Charger-equipped buses are assumed to receive at least one replacement
+energy battery during their service life.** This deliberate fleet-life
+assumption is retained even when the energy-throughput calculation alone
+would imply no replacement. It is separate from the two-wheeler policy and
+is not a calibrated calendar-ageing model or a measured failure rate.
+
+For cells with ``charger mass > 0``, the implemented replacement factor is:
+
+.. math::
+
+   r_{bus} = \min\left(3,\max\left(1,
+       \frac{D\,E}{3600\,C\,N}-1\right)\right)
+
+``D`` is lifetime kilometres, ``E`` is ``TtW energy`` in kJ/km, ``C`` is nominal
+``electric energy stored`` in kWh, and ``N`` is ``battery cycle life``. The
+cycling term uses equivalent full cycles of nominal capacity, without another
+DoD divisor. Charging strategy and DoD affect the upstream battery sizing.
+The factor is zero when the vehicle has no charger. Availability masks must
+still be checked before interpreting results.
+
+The existing upper bound is three replacements. Values between one and three
+may be fractional: the battery factor is not rounded up to whole replacement
+events. Fuel-cell replacements use a separate calculation. The inventory
+includes ``1 + r_bus`` packs in both battery supply and end-of-life quantities,
+so the minimum means **two packs in total**, counting the initial battery.
+Replacement purchase costs use the same factor, markup and the existing
+mid-life discounting convention; bus cost outputs are per passenger-kilometre.
+
+For example, a completed default 2025 ``13m-city / BEV-depot`` case has a
+256.01 kWh battery, 700,000 km lifetime and 3,500-cycle input. Its lifetime
+throughput is about 2,985 equivalent full cycles, yet the fleet-life minimum
+retains one replacement. Battery supply is therefore about 2,942.7 kg for the
+initial and replacement packs together, versus 1,471.3 kg installed onboard.
+These are model accounting results, not new durability measurements.
+
+The chemistry comparisons and tables below describe the historical study.
+They should not be interpreted as proof that the current minimum is required
+by cycling alone, or as current outputs for every model year and duty cycle.
+
+The historical battery lifetime assessment is based on the expected battery
 cycle life, based on theoretical values given by :cite:`ct-1034` as well as some
 experimental ones from :cite:`ct-1063`. Although the specifications of the different battery
 chemistry are presented in :ref:`Table 15 <table-15>`

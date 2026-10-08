@@ -73,6 +73,19 @@ degrees. Matching those simulator traces does not independently validate fuel
 or electricity use. Availability masks and charging constraints
 must be checked before interpreting a zero energy output.
 
+Battery replacement assumption
+------------------------------
+
+Charger-equipped buses retain a deliberate minimum of **one replacement
+battery over service life**, even when the cycling estimate implies none.
+The initial pack is additional, so battery supply and disposal include at
+least two packs. This fleet-life assumption is not established by the energy
+calibration above or by a fitted calendar-ageing model. The throughput-based
+factor remains fractional and capped at three replacements. See
+:ref:`the calculation, scope and cost treatment <bus-battery-replacement-policy>`.
+The removal of forced replacements in ``carculator_two_wheeler`` does not
+change this bus policy or any bus results.
+
 Energy boundaries and time trends
 ---------------------------------
 

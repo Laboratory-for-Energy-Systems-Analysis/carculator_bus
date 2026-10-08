@@ -25,6 +25,8 @@ it has not yet been published. Older entries, where present, retain their origin
 
 ### Documentation and verification
 
+- Clarify the retained minimum of one replacement energy battery for charger-equipped buses, separate from cycling demand. Document initial-plus-replacement inventory accounting, fractional allocation, the three-replacement cap and cost treatment; bus calculations are unchanged.
+
 - Add current installation and executable 2025 quick-start examples, migration notes and a release checklist.
 - Record calibration scope, measurement boundaries and numerical consistency separately from empirical validation.
 - Verify built wheels and sdist-built wheels, packaged resource hashes, installed tests with export extras and offline core-only model/LCIA smoke runs.
