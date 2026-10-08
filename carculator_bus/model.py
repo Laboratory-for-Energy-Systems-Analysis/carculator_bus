@@ -495,6 +495,8 @@ class BusModel(VehicleModel):
                 (1, 1, n_year, n_iterations),
             )
 
+        self.apply_battery_cost_inputs(projected=True)
+
     def calculate_ttw_energy(self):
         """
         This method calculates the energy required to operate auxiliary services as well
