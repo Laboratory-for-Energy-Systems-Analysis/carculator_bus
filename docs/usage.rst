@@ -1,40 +1,101 @@
 .. _usage:
 
-Using Carculator Bus
-====================
+Usage
+=====
 
-.. note::
+Use the vehicle package’s input, model and inventory classes. Start with a small
+static scope before expanding years, sizes or uncertainty samples.
 
-   Many examples are given in this :download:`examples.zip file <_static/resources/examples.zip>` which contains a Jupyter notebook
-    you can run directly on your computer.
+Quick start
+-----------
 
-Static vs. Stochastic mode
---------------------------
+.. code-block:: python
 
-The inventories can be calculated using the most likely value of the given input parameters ("static" mode), but also using
-randomly-generated values based on a probability distribution for those ("stochastic" mode). Additionally, the tool can run
-one-at-a-time sensitivity analyses by quantifying the effect of incrementing each input parameter value by 10% on the end-results.
+   from carculator_bus import (
+       BusInputParameters,
+       BusModel,
+       InventoryBus,
+       fill_xarray_from_input_parameters,
+   )
 
-Retrospective and Prospective analyses
---------------------------------------
+   inputs = BusInputParameters()
+   inputs.static()
+   _, array = fill_xarray_from_input_parameters(
+       inputs,
+       scope={"size": ["13m-city"], "powertrain": ["ICEV-d", "BEV-depot"], "year": [2025]},
+   )
+   model = BusModel(array)
+   model.set_all()
+   print(model["TtW energy"])  # kJ per vehicle-kilometre
 
-By default, the tool produces results across thea year 2000, 2010, 2020, 2030, 2040 and 2050.
-It does so by adjusting efficiencies at the vehicle level, but also by adjusting certain aspects of the background inventories.
-The latter is done by linking the vehicles' inventories to energy scenario-specific ecoinvent databases produced by ``premise``.
+   inventory = InventoryBus(model, functional_unit="pkm")
+   impacts = inventory.calculate_impacts()
+   print(impacts.sel(impact_category="climate change").sum("impact"))
 
-Export of inventories
----------------------
 
-The library allows to export inventories in different formats, to be consumed by different tools and link to various databases.
-Among the formats available, ``carculator_bus`` can export inventories as:
+Inputs and scope
+----------------
 
-* Brightway2-compatible Excel file
-* Simapro-compatible CSV file
-* Brightway2 LCIImporter object
-* Python dictionary
+The vehicle input classes provide packaged defaults. Call ``static()`` for a
+single deterministic sample, or ``stochastic(n, seed=42)`` for seeded parameter
+draws. The array builder returns ``(mappings, array)`` and preserves labelled
+``size``, ``powertrain``, ``parameter``, ``year`` and ``value`` dimensions.
+Scope by actual labels and native input years; interpolate explicitly when a
+year is not in the parameter table. The current defaults include 2025.
 
-The inventories cna be made compatible for:
+Change input parameters before constructing a fresh vehicle model. Constructor
+overrides such as battery chemistry, capacity, fuel blends and component
+efficiencies are copied, preserving the caller's data. Most vehicle overrides
+use ``(powertrain, size, year)`` keys; consult the model API for exceptions.
+Repeated ``set_all()`` calls on an already completed model are not the supported
+way to compare independent scenarios.
 
-* ecoinvent 3.5 and 3.6, cut-off
-* REMIND-ecoinvent produced with ``premise``
-* UVEK-ecoinvent 2.2 database
+Energy and results
+------------------
+
+``model["TtW energy"]`` is kJ per vehicle-kilometre. For BEVs it is net
+stored-energy depletion; ``model.battery_terminal_energy`` is a separate DC
+boundary, and ``model["electricity consumption"]`` is grid electricity in
+kWh/km. Multiply the latter by 100 for kWh/100 km.
+
+Construct the inventory with the completed model, not its raw parameter array.
+Use ``calculate_impacts()`` and labelled selection/reduction of the returned
+xarray. Functional units are ``vkm``, ``pkm`` and ``tkm``. Passenger- and
+cargo-normalized results require finite positive loads for active vehicles.
+Availability-masked zero consumption does not describe a zero-energy vehicle.
+
+Bus financial outputs are already per passenger-kilometre, despite legacy
+parameter names ending in ``per km``. Inventory functional units are separate.
+
+
+Inventory export
+----------------
+
+Install the optional export dependencies described in :doc:`installation`.
+After a complete model and inventory calculation, the shared public API is:
+
+.. code-block:: python
+
+   paths = inventory.export_lci(
+       ecoinvent_version="3.10",
+       software="brightway2",
+       format="file",
+       directory="exports",
+       filename="vehicle-comparison",
+   )
+
+``software`` accepts ``brightway2`` or ``simapro``. Brightway export supports
+``file``, ``string`` and ``bw2io``; SimaPro supports ``file`` and ``string``.
+The supported ecoinvent targets are 3.9 and 3.10. Multi-year runs preserve every
+year in the returned exports, and exporting does not change the original
+inventory or calculated impacts. A destination Brightway/ecoinvent setup is
+needed to register and link exported inventories, not for the core calculation.
+
+Reproducibility and interpretation
+----------------------------------
+
+Record package versions, input overrides, driving cycle, load, geography,
+fuel blend, background scenario, functional unit and energy meter boundary.
+Seeded parameter draws do not seed every downstream cost adjustment.
+See :doc:`release` for migration notes and :doc:`validity` for the scope of
+calibration, measurement comparisons and known limitations.

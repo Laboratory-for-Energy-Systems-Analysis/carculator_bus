@@ -12,6 +12,8 @@
 #
 import os
 import sys
+from pathlib import Path
+from runpy import run_path
 
 sys.path.insert(0, os.path.abspath(".."))
 
@@ -23,7 +25,10 @@ copyright = "2021, Paul Scherrer Institut"
 author = "Romain Sacchi"
 
 # The full version, including alpha/beta/rc tags
-release = "0.0.7"
+release = run_path(
+    str(Path(__file__).resolve().parents[1] / "carculator_bus" / "_version.py")
+)["VERSION"]
+version = release
 
 
 # -- General configuration ---------------------------------------------------
@@ -73,8 +78,8 @@ html_theme_options = {
     },
     "font": {"text": "Fira Sans", "code": "JetBrains Mono"},
     "site_url": "https://carculator-bus.readthedocs.io",
-    "repo_url": "https://github.com/romainsacchi/carculator_bus/",
-    "repo_name": "romainsacchi/carculator_bus",
+    "repo_url": "https://github.com/Laboratory-for-Energy-Systems-Analysis/carculator_bus/",
+    "repo_name": "Laboratory-for-Energy-Systems-Analysis/carculator_bus",
     "edit_uri": "blob/master/docs/",
     "globaltoc_collapse": True,
     "features": ["navigation.top", "search.share", "navigation.tracking", "toc.follow"],
