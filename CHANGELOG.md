@@ -16,6 +16,7 @@ it has not yet been published. Older entries, where present, retain their origin
 
 ### Model and inventory changes
 
+- Gas buses now emit the methane represented by their additional fuel-purchase allowance; previously the lost gas was absent from direct emissions. Use the shared mass balance, include both origins in impacts/exports, and document the historical loss-rate boundary; see [validation](docs/validity.rst#additional-methane-leakage).
 - Make projected costs reproducible with `stochastic(n, seed=...)`, retaining factors across sample/year selections and serialization without using NumPy's global RNG. Keep deterministic static/sensitivity factors and explicit battery prices. `stochastic(1)` now also samples cost factors; regenerate old stochastic cost results.
 - Display the available sample in the bus summary when sample `0` is absent, allowing selected stochastic samples to complete.
 - Correct year/sample alignment in automatic component-cost projections. Multi-year sensitivity references now match static prices and costs; sampled factors remain attached to their samples across years. Preserve existing price curves, explicit battery prices and physical/inventory outputs.

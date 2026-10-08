@@ -312,19 +312,7 @@ class InventoryBus(Inventory):
             ) * -1
 
         self.add_fuel_to_vehicles("methane", ["ICEV-g"], "EV-g")
-
-        self.A[
-            :,
-            self.find_input_indices(("fuel supply for methane vehicles",)),
-            self.find_input_indices((f"transport, {self.vm.vehicle_type}",)),
-        ] *= 1 + self.array.sel(parameter="CNG pump-to-tank leakage")
-
-        # Gas leakage to air
-        self.A[
-            :,
-            self.inputs[("Methane, fossil", ("air",), "kilogram")],
-            self.find_input_indices((f"transport, {self.vm.vehicle_type}",)),
-        ] *= 1 + self.array.sel(parameter="CNG pump-to-tank leakage")
+        self.add_methane_leakage()
 
         self.add_fuel_to_vehicles("diesel", ["ICEV-d", "HEV-d"], "EV-d")
 
