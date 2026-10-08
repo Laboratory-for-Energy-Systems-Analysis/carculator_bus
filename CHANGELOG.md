@@ -16,6 +16,7 @@ it has not yet been published. Older entries, where present, retain their origin
 
 ### Model and inventory changes
 
+- Correct year/sample alignment in automatic component-cost projections. Multi-year sensitivity references now match static prices and costs; sampled factors remain attached to their samples across years. Preserve existing price curves, explicit battery prices and physical/inventory outputs.
 - Preserve explicit generic and selected-chemistry battery prices through cost adjustment, including scoped zero and per-sample constructor inputs. Verify completed purchase and replacement costs and unchanged default pricing; see [usage](docs/usage.rst#battery-unit-costs).
 - Add native 2025 inputs and explicit component-efficiency priors, extended consistently across model years.
 - Adopt an 8.3 kW auxiliary prior for 13 m city BEVs from 2020 onward, with triangular 6.225–10.375 kW engineering uncertainty and documented single-bus calibration limits.
