@@ -10,6 +10,33 @@ their agreement is not a new validation of all 2025 buses.
 
 .. _bus-year-selection:
 
+.. _charging-cost-accounting:
+
+Charging cost accounting
+------------------------
+
+Electricity running costs use grid purchases: ``electricity consumption`` in
+kWh/km times the electricity tariff. Grid consumption already includes both
+battery-charge and charger losses; neither efficiency is applied again when
+billing that electricity. Previously the cost formula omitted charger losses.
+At 90% charger efficiency it understated the electricity component by 10%; at
+80% efficiency it understated it by 20%. This correction changes costs, while
+preserving vehicle energy demand, inventory electricity exchanges and LCIA.
+
+BEVs use this grid-based calculation. Other powertrains retain their existing
+fuel-cost convention. Tariffs and charging-efficiency assumptions have not
+been refitted.
+
+Bus costs remain per passenger-km, using each vehicle/year/sample's passenger
+count. For comparison on a vehicle-km basis, the default Swiss 2025
+``13m-city`` depot BEV costs approximately EUR 27.59/100 vehicle-km for
+electricity, corrected from EUR 24.83. Depot, opportunity and in-motion electric
+strategies share the same billing boundary.
+
+Completed model/inventory checks and the shared billing contract are described
+in the `shared charging-cost validation <https://github.com/Laboratory-for-Energy-Systems-Analysis/carculator_utils/blob/master/docs/validity.rst#charging-cost-accounting>`_.
+
+
 Propulsion inputs and year selection
 ------------------------------------
 

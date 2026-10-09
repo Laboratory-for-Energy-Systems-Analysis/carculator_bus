@@ -925,11 +925,12 @@ class BusModel(VehicleModel):
             / self["average passengers"]
         )
 
-        # For battery, need to divide cost of electricity
-        # in battery by efficiency of charging
-
+        # Retain the fuel-cost convention; electric modes use grid purchases.
         _ = lambda x: np.where(x == 0, 1, x)
         self["energy cost"] /= _(self["battery charge efficiency"])
+        self.set_electricity_costs(
+            self["energy cost per kWh"] / self["average passengers"]
+        )
 
         self["component replacement cost"] = (
             self["energy battery cost"] * self["battery lifetime replacements"]
