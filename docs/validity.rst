@@ -79,9 +79,12 @@ Temperature inputs and country fallback
 ---------------------------------------
 
 ``ambient_temperature`` accepts a Celsius scalar for all months or twelve
-values in January--December order. ``indoor_temperature`` sets the cabin
-setpoint, defaulting to 20 degrees Celsius. For example, the following imposes
-an illustrative constant 25 degrees Celsius throughout the year:
+values in January--December order. The cabin assumption is fixed at 20 degrees
+Celsius: ``indoor_temperature`` accepts the scalar ``20`` or twelve monthly
+values all equal to ``20``. Other cabin settings now raise ``ValueError`` before
+sizing because the empirical HVAC curve does not model thermostat sensitivity.
+HVAC demand still varies with outside temperature. For example, the following
+imposes an illustrative constant outside temperature of 25 degrees Celsius:
 
 .. code-block:: python
 
@@ -89,7 +92,7 @@ an illustrative constant 25 degrees Celsius throughout the year:
     model.set_all()
 
 Supply a twelve-element sequence instead of ``25.0`` for a local monthly
-profile. Temperature overrides take precedence over the country lookup and
+profile. Ambient-temperature overrides take precedence over the country lookup and
 leave the supplied array or sequence unchanged.
 
 Without an override, the shared runtime uses the first matching country row
@@ -106,6 +109,23 @@ temperatures through sizing, fuel/charging exchanges and LCIA. These are
 software consistency checks; neither the temperature dataset nor the HVAC
 calibration is changed. See the
 `shared regression <https://github.com/Laboratory-for-Energy-Systems-Analysis/carculator_utils/blob/master/tests/test_temperature_fallback.py>`_.
+
+Cabin-temperature limitation
+----------------------------
+
+Earlier versions accepted different cabin settings but only used them to choose
+between heating and cooling; the ambient-dependent load magnitude stayed the
+same. A completed 2025 13m-city depot-BEV at 0 degrees Celsius outside consumed
+121.25 kWh/100 km charging electricity at cabin settings of 15, 20 and 25 degrees.
+Those results cannot establish the energy effect of a thermostat change.
+
+The new validation makes that limitation explicit while preserving default
+20-degree results. Ambient profiles, HVAC power, heat-pump coefficients and
+battery thermal-management assumptions retain their existing roles. This is
+an input-contract correction, with no new heat-balance model or calibration.
+Completed multi-year diesel, fuel-cell and depot-BEV checks preserve sizing,
+inventories and LCIA for the supported setting; see the
+`shared cabin-temperature regression <https://github.com/Laboratory-for-Energy-Systems-Analysis/carculator_utils/blob/master/tests/test_cabin_temperature.py>`_.
 
 Battery replacement assumption
 ------------------------------

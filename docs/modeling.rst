@@ -368,6 +368,13 @@ The HVAC system is sized according to the bus size class (i.e., from 10 kW for t
 to 24 kW for the double-deck or articulated buses). This curve is adapted to the different bus
 size classes using the power load-to-maximum HVAC power ratio depicted above.
 
+This empirical calculation uses a fixed cabin assumption of 20 degrees Celsius.
+Other ``indoor_temperature`` settings are rejected because the curve does not
+represent cabin-setpoint sensitivity. Outdoor temperature continues to control
+HVAC demand, and ``ambient_temperature`` accepts a scalar or monthly profile;
+see :ref:`bus-temperature-inputs`. This restriction does not add a cabin
+heat-balance model or change the existing curve.
+
 For BEV-buses, the HVAC is fitted with a heat pump, with the following Coefficients of
 Performance (CoP), taken from :cite:`ct-1095`:
 
