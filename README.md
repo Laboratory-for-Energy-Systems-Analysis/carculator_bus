@@ -40,7 +40,8 @@ python -m pip install "carculator_bus[brightway]==0.1.1"
 ```
 
 Brightpath also installs `bw2io` without that extra. Export targets ecoinvent
-3.9 and 3.10, cut-off; external suppliers must be matched to the corresponding
+3.12 cut-off by default; legacy 3.9/3.10 targets reject suppliers without
+verified older links. External suppliers must be matched to the corresponding
 background in the destination tool. See [inventory export](docs/inventory_export.rst).
 
 ## Quick start
@@ -140,3 +141,7 @@ Contact [carculator@psi.ch](mailto:carculator@psi.ch) or open an [issue](https:/
 Maintained by [Romain Sacchi](https://github.com/romainsacchi), with contributions
 from the carculator development team. See [contributing](https://github.com/Laboratory-for-Energy-Systems-Analysis/carculator_bus/blob/master/CONTRIBUTING.md).
 Licensed under [BSD-3-Clause](https://github.com/Laboratory-for-Energy-Systems-Analysis/carculator_bus/blob/master/LICENSE).
+
+The shared LCA background now uses premise 2.5.4 and ecoinvent 3.12 cutoff.
+The former `NMC-523` option is replaced by `NMC-532` (actual Ni:Mn:Co 5:3:2
+inventory); update custom chemistry selections. See `docs/release.rst`.

@@ -291,10 +291,10 @@
       ],
       "missing_endpoint": false
     },
-    "baseline-2025-0041-battery cell energy density, NMC-523": {
+    "baseline-2025-0041-battery cell energy density, NMC-532": {
       "endpoint_records": [
-        "1366-2020-battery cell energy density, NMC-523",
-        "1367-2030-battery cell energy density, NMC-523"
+        "1366-2020-battery cell energy density, NMC-532",
+        "1367-2030-battery cell energy density, NMC-532"
       ],
       "missing_endpoint": false
     },
@@ -368,10 +368,10 @@
       ],
       "missing_endpoint": false
     },
-    "baseline-2025-0052-battery cell mass share, NMC-523": {
+    "baseline-2025-0052-battery cell mass share, NMC-532": {
       "endpoint_records": [
-        "1444-2020-battery cell mass share, NMC-523",
-        "1445-2030-battery cell mass share, NMC-523"
+        "1444-2020-battery cell mass share, NMC-532",
+        "1445-2030-battery cell mass share, NMC-532"
       ],
       "missing_endpoint": false
     },
@@ -506,10 +506,10 @@
       ],
       "missing_endpoint": false
     },
-    "baseline-2025-0072-battery cycle life, NMC-523": {
+    "baseline-2025-0072-battery cycle life, NMC-532": {
       "endpoint_records": [
-        "1336-2020-battery cycle life, NMC-523",
-        "1337-2030-battery cycle life, NMC-523"
+        "1336-2020-battery cycle life, NMC-532",
+        "1337-2030-battery cycle life, NMC-532"
       ],
       "missing_endpoint": false
     },

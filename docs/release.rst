@@ -28,3 +28,25 @@ See :doc:`validity` for calibration evidence and the scope of model validation.
 Bus battery replacement behavior is unchanged: charger-equipped buses retain
 at least one replacement over service life, in addition to their initial pack.
 See :ref:`bus-battery-replacement-policy` for this explicit fleet-life assumption.
+
+NMC532 chemistry migration
+--------------------------
+
+The ecoinvent 3.12 background refresh replaces the former ``NMC-523`` option
+with ``NMC-532`` (Ni:Mn:Co = 5:3:2). Use ``NMC-532`` in explicit
+``energy_storage`` selections and chemistry-specific custom parameter names.
+This changes the inventory chemistry; it is not an alias for the old recipe.
+Capacity, cell-mass-share, cycle-life and cost values retain the existing
+engineering priors under the new name, rather than a new empirical calibration.
+Historical validation snapshots retain their original labels. Use matching
+updated vehicle and ``carculator_utils`` checkouts for this background refresh.
+
+LCA background update
+---------------------
+
+Matching shared utilities now use premise 2.5.4 and ecoinvent 3.12 cutoff, with
+a rebuilt A matrix and all 57 background LCIA coefficient matrices. Exports
+default to ecoinvent 3.12. Older targets reject suppliers without verified
+backward links. Recalculate saved LCA results; the vehicle energy/mass model
+is unchanged by this background refresh. Reproduction and validation details
+are in carculator_utils' ``docs/background_rebuild.rst``.

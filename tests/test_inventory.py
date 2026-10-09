@@ -246,7 +246,7 @@ def test_export_to_bw(bm):
     """Export every scoped year using the shared representative model."""
     ic = InventoryBus(bm, method="recipe", indicator="midpoint")
 
-    for b in ("3.9",):
+    for b in ("3.12",):
         ic.export_lci(
             ecoinvent_version=b,
             format="bw2io",
@@ -256,7 +256,7 @@ def test_export_to_bw(bm):
 def test_export_to_excel(bm, tmp_path):
     """Exercise each file/string exporter without writing into the checkout."""
     ic = InventoryBus(bm)
-    for b in ("3.10",):
+    for b in ("3.12",):
         for s in ("brightway2", "simapro"):
             for d in ("file", "string"):
                 ic.export_lci(
