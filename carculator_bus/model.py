@@ -1,4 +1,3 @@
-import warnings
 from itertools import product
 
 import numexpr as ne
@@ -16,8 +15,6 @@ from carculator_utils.numerical import capital_recovery_factor
 from prettytable import PrettyTable
 
 from . import DATA_DIR
-
-warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
 class BusModel(VehicleModel):

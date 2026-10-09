@@ -3,14 +3,10 @@ inventory.py contains the InventoryBus subclass which inherits from the Inventor
 that provides all methods to solve inventories.
 """
 
-import warnings
-
 import numpy as np
 from carculator_utils.inventory import Inventory
 
 from . import DATA_DIR
-
-warnings.filterwarnings("ignore", category=np.VisibleDeprecationWarning)
 
 IAM_FILES_DIR = DATA_DIR / "IAM"
 
