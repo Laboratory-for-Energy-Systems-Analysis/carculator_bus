@@ -1,0 +1,68 @@
+{
+  "issue": 4,
+  "policy": "Preserve the first existing definition of every cell, including its distribution and source. Regenerate old stochastic samples after record changes; split scopes share uncertainty groups.",
+  "original_records": {
+    "936-2040-electric powertrain cost per kW": {
+      "amount": 27,
+      "category": "Costs",
+      "powertrain": [
+        "ICEV-d",
+        "ICEV-g"
+      ],
+      "sizes": [
+        "9m",
+        "13m-city",
+        "13m-coach",
+        "13m-city-double",
+        "13m-coach-double",
+        "18m"
+      ],
+      "year": 2040,
+      "name": "electric powertrain cost per kW",
+      "unit": "\u20ac/kW",
+      "importance": "",
+      "source": "",
+      "comment": "",
+      "status": "",
+      "kind": "distribution",
+      "uncertainty_type": 5,
+      "loc": 27,
+      "minimum": 19.5,
+      "maximum": 54
+    },
+    "937-2050-electric powertrain cost per kW": {
+      "amount": 27,
+      "category": "Costs",
+      "powertrain": [
+        "ICEV-d",
+        "ICEV-g"
+      ],
+      "sizes": [
+        "9m",
+        "13m-city",
+        "13m-coach",
+        "13m-city-double",
+        "13m-coach-double",
+        "18m"
+      ],
+      "year": 2050,
+      "name": "electric powertrain cost per kW",
+      "unit": "\u20ac/kW",
+      "importance": "",
+      "source": "",
+      "comment": "",
+      "status": "",
+      "kind": "distribution",
+      "uncertainty_type": 5,
+      "loc": 27,
+      "minimum": 19.5,
+      "maximum": 54
+    }
+  },
+  "replacement_record_ids": {
+    "936-2040-electric powertrain cost per kW": [],
+    "937-2050-electric powertrain cost per kW": []
+  },
+  "effective_cells_sha256": "fefd0336f580cd42e54d3667d0d76328c7d249d489c401c22eebce3cdb3078b1",
+  "effective_cell_count": 27790
+}

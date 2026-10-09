@@ -25337,62 +25337,6 @@
         "minimum": 19.5,
         "maximum": 54
     },
-    "936-2040-electric powertrain cost per kW": {
-        "amount": 27,
-        "category": "Costs",
-        "powertrain": [
-            "ICEV-d",
-            "ICEV-g"
-        ],
-        "sizes": [
-            "9m",
-            "13m-city",
-            "13m-coach",
-            "13m-city-double",
-            "13m-coach-double",
-            "18m"
-        ],
-        "year": 2040,
-        "name": "electric powertrain cost per kW",
-        "unit": "\u20ac/kW",
-        "importance": "",
-        "source": "",
-        "comment": "",
-        "status": "",
-        "kind": "distribution",
-        "uncertainty_type": 5,
-        "loc": 27,
-        "minimum": 19.5,
-        "maximum": 54
-    },
-    "937-2050-electric powertrain cost per kW": {
-        "amount": 27,
-        "category": "Costs",
-        "powertrain": [
-            "ICEV-d",
-            "ICEV-g"
-        ],
-        "sizes": [
-            "9m",
-            "13m-city",
-            "13m-coach",
-            "13m-city-double",
-            "13m-coach-double",
-            "18m"
-        ],
-        "year": 2050,
-        "name": "electric powertrain cost per kW",
-        "unit": "\u20ac/kW",
-        "importance": "",
-        "source": "",
-        "comment": "",
-        "status": "",
-        "kind": "distribution",
-        "uncertainty_type": 5,
-        "loc": 27,
-        "minimum": 19.5,
-        "maximum": 54
-    },
     "938-2000-cooling energy consumption": {
         "amount": 1,
         "category": "Auxiliaries",
