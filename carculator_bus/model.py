@@ -11,6 +11,7 @@ from carculator_utils.energy_consumption import (
     get_default_driving_cycle_name,
 )
 from carculator_utils.model import VehicleModel
+from carculator_utils.model_run import repeatable_run
 from carculator_utils.numerical import capital_recovery_factor
 from prettytable import PrettyTable
 
@@ -40,6 +41,7 @@ class BusModel(VehicleModel):
             electric.setdefault((powertrain, size, year), chemistry)
         self.energy_storage.setdefault("origin", "CN")
 
+    @repeatable_run
     def set_all(self):
         """
         Size buses and calculate energy use, costs and emissions.

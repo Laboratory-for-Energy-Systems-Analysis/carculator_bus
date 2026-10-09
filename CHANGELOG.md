@@ -16,6 +16,8 @@ it has not yet been published. Older entries, where present, retain their origin
 
 ### Model and inventory changes
 
+- Make repeated `set_all()` calls rebuild from retained inputs, with stable costs/energy and retained PHEV components. Preserve explicit input edits and selected sample prices; see the shared repeat-run guide.
+
 - Bill BEVs from grid electricity consumption, including charger losses. Preserve fuel-mode costs and model-specific cost units; verify costs against completed inventory purchases. See [charging cost accounting](docs/validity.rst#charging-cost-accounting).
 - Remove automatic energy-target-driven hybridization completely, including its adjustment method and target-compliance display. Preserve annual propulsion inputs across year selections; the legacy `energy_target` argument is accepted but has no effect. Verify completed city-bus and coach energy, fuel supply, emissions and LCIA across single/multiple years, and retain physical mass-compliance checks. See [scope and migration](docs/validity.rst#bus-year-selection).
 - Reject cabin-temperature settings other than 20 degrees Celsius: the empirical HVAC curve does not model thermostat sensitivity. Retain scalar/monthly ambient-temperature overrides and unchanged default results; document the restriction and verify completed models and inventories. See [temperature inputs](docs/validity.rst#bus-temperature-inputs).
