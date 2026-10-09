@@ -22,6 +22,8 @@ it has not yet been published. Older entries, where present, retain their origin
 
 ### Model and inventory changes
 
+- Require explicit ambient temperatures when the study country has no bundled climate row; remove automatic Swiss substitution and qualify existing city proxies.
+
 - Make repeated `set_all()` calls rebuild from retained inputs, with stable costs/energy and retained PHEV components. Preserve explicit input edits and selected sample prices; see the shared repeat-run guide.
 
 - Bill BEVs from grid electricity consumption, including charger losses. Preserve fuel-mode costs and model-specific cost units; verify costs against completed inventory purchases. See [charging cost accounting](docs/validity.rst#charging-cost-accounting).

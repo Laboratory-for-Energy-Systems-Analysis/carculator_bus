@@ -342,7 +342,8 @@ Battery management system power demand
 According to :cite:`ct-1034`, the battery management system requires 2.75 kW on hot
 summer days to cool the battery down and 0.5 kW on cold winter days to keep it warm. The
 selected country's bundled monthly temperature series (12 values for the year) is
-used by default, with an announced Swiss fallback when no country row exists.
+used as a city proxy by default. Missing countries require an explicit local
+profile; the automatic Swiss fallback has been removed.
 Explicit ambient-temperature inputs override this lookup; see
 :ref:`bus-temperature-inputs` for the input format and fallback limitations.
 These temperatures are combined with the values mentioned above (2.75 kW and 0.5 kW) to calculate the

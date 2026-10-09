@@ -164,19 +164,19 @@ Supply a twelve-element sequence instead of ``25.0`` for a local monthly
 profile. Ambient-temperature overrides take precedence over the country lookup and
 leave the supplied array or sequence unchanged.
 
-Without an override, the shared runtime uses the first matching country row
-in its bundled ``monthly_avg_temp.csv``. If no row exists, it prints a notice
-and uses Switzerland's monthly series. The current table lacks Brazil, the US,
-Canada, India and Australia, among other countries. This fallback is a modelling
-assumption whose suitability depends on the study location.
+Without an override, the shared runtime uses the first city row for the
+requested country in ``monthly_avg_temp.csv``. This is a coarse city proxy,
+not a national driving-weighted climate normal. Missing countries now raise
+``ValueError`` and require an explicit local profile; the former automatic
+Swiss substitution has been removed. The bundled table lacks Brazil, the US,
+Canada, India and Australia, among other countries.
 
-The shared fallback now retains decimal temperatures, fixing a crash on the
-Swiss value ``1.9``. Completed checks in all five countries cover 13m-city
-diesel, fuel-cell and depot BEV buses in 2025/2030 with two load samples.
-They compare default-fallback runs against explicitly supplied Swiss
-temperatures through sizing, fuel/charging exchanges and LCIA. These are
-software consistency checks; neither the temperature dataset nor the HVAC
-calibration is changed. See the
+Completed checks cover rejection and explicit-profile runs for diesel,
+fuel-cell and depot BEV buses in 2025/2030 with two load samples, through
+sizing, fuel/charging exchanges and LCIA. Scalar and monthly overrides retain
+decimals and leave caller data unchanged. These are software consistency
+checks; improved geographic climate coverage and a broader measured thermal
+model remain outstanding scientific work. See the
 `shared regression <https://github.com/Laboratory-for-Energy-Systems-Analysis/carculator_utils/blob/master/tests/test_temperature_fallback.py>`_.
 
 Cabin-temperature limitation
