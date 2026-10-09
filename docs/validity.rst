@@ -73,6 +73,40 @@ degrees. Matching those simulator traces does not independently validate fuel
 or electricity use. Availability masks and charging constraints
 must be checked before interpreting a zero energy output.
 
+.. _bus-temperature-inputs:
+
+Temperature inputs and country fallback
+---------------------------------------
+
+``ambient_temperature`` accepts a Celsius scalar for all months or twelve
+values in January--December order. ``indoor_temperature`` sets the cabin
+setpoint, defaulting to 20 degrees Celsius. For example, the following imposes
+an illustrative constant 25 degrees Celsius throughout the year:
+
+.. code-block:: python
+
+    model = BusModel(array, country="BR", ambient_temperature=25.0)
+    model.set_all()
+
+Supply a twelve-element sequence instead of ``25.0`` for a local monthly
+profile. Temperature overrides take precedence over the country lookup and
+leave the supplied array or sequence unchanged.
+
+Without an override, the shared runtime uses the first matching country row
+in its bundled ``monthly_avg_temp.csv``. If no row exists, it prints a notice
+and uses Switzerland's monthly series. The current table lacks Brazil, the US,
+Canada, India and Australia, among other countries. This fallback is a modelling
+assumption whose suitability depends on the study location.
+
+The shared fallback now retains decimal temperatures, fixing a crash on the
+Swiss value ``1.9``. Completed checks in all five countries cover 13m-city
+diesel, fuel-cell and depot BEV buses in 2025/2030 with two load samples.
+They compare default-fallback runs against explicitly supplied Swiss
+temperatures through sizing, fuel/charging exchanges and LCIA. These are
+software consistency checks; neither the temperature dataset nor the HVAC
+calibration is changed. See the
+`shared regression <https://github.com/Laboratory-for-Energy-Systems-Analysis/carculator_utils/blob/master/tests/test_temperature_fallback.py>`_.
+
 Battery replacement assumption
 ------------------------------
 
