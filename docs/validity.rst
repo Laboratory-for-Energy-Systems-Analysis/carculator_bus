@@ -8,6 +8,48 @@ another model, and measured energy. The historical manufacturer, VECTO and
 HBEFA comparisons in :doc:`modeling` describe the original model development;
 their agreement is not a new validation of all 2025 buses.
 
+.. _bus-year-selection:
+
+Propulsion inputs and year selection
+------------------------------------
+
+Bus propulsion follows the supplied annual vehicle parameters. The legacy
+``adjust_combustion_power_share`` routine has been removed completely. It
+previously ran only for multi-year selections and reduced the combustion share
+of nominal diesel and gas buses to meet energy-reduction targets, adding
+electric propulsion. Its 2020 reference could also be extrapolated from the
+selected future years. Consequently, selecting other years changed the same
+2025 vehicle's powertrain, fuel demand, emissions and inventory results.
+
+There is no opt-in version of this adjustment. The shared constructor's legacy
+``energy_target`` argument remains accepted for call compatibility but has no
+effect on bus calculations; remove it from bus scripts. Set propulsion
+assumptions through the annual vehicle inputs. The ``is_compliant`` output
+continues to indicate actual driving-mass compliance with gross mass, not
+compliance with energy-reduction or CO2 targets. The obsolete energy-target
+asterisk in the passenger table has also been removed.
+
+For the default Swiss 2025 ``13m-city`` diesel bus on the bundled bus cycle,
+the previous model reported approximately 38.49 L/100 km when run alone,
+33.16 L/100 km with 2020, and 28.74 L/100 km with 2030. The corrected runs
+retain the input combustion share of 100% and approximately 38.49 L/100 km
+across those selections. This is a consistency repair, not a new calibration.
+Recalculate multi-year studies that relied on the former automatic adjustment.
+
+``tests/test_energy_year_scope.py`` completes model and LCIA runs for
+``13m-city`` and ``13m-coach`` buses, using diesel, gas, non-plug-in diesel
+hybrid and depot BEV powertrains and two passenger-load samples. It compares
+2025 alone with selections including 2020, 2030 and reordered years, checking
+propulsion shares, engine/motor ratings, energy, mass, fuel/electricity inputs,
+direct emissions and characterized results. Physical and inventory comparisons
+use the existing 0.1% driving-mass sizing tolerance; propulsion shares must
+retain their input values exactly. Explicit input power splits are preserved,
+and passing legacy energy targets cannot reactivate the removed routine.
+
+Run the focused checks with the matching shared runtime::
+
+   python -m pytest tests/test_energy_year_scope.py
+
 Measured auxiliary calibration
 ------------------------------
 

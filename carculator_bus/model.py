@@ -20,6 +20,13 @@ warnings.simplefilter(action="ignore", category=FutureWarning)
 
 
 class BusModel(VehicleModel):
+    """Model buses using their supplied annual propulsion parameters.
+
+    The inherited ``energy_target`` constructor argument is retained for call
+    compatibility but has no effect. Automatic target-driven hybridization
+    has been removed.
+    """
+
     def set_battery_chemistry(self):
         # override default values for batteries
         # if provided by the user
@@ -35,29 +42,17 @@ class BusModel(VehicleModel):
 
     def set_all(self):
         """
-        This method runs a series of other methods to obtain the tank-to-wheel energy requirement, efficiency
-        of the car, costs, etc.
+        Size buses and calculate energy use, costs and emissions.
 
-        :meth:`set_component_masses()`, :meth:`set_car_masses()` and :meth:`set_power_parameters()` and
-        :meth:`set_energy_stored_properties` relate to one another.
-        `powertrain_mass` depends on `power`, `curb_mass` is affected by changes in `powertrain_mass`,
-        `combustion engine mass`, `electric engine mass`. `energy battery mass` is influenced by the `curb mass`
-        but also by the `daily distance` the truck has. `power` is also varying with `curb_mass`.
-
-        The current solution is to loop through the methods until either:
-
-        * the change in curb mass between two iterations is inferior to 2%.
-        * or the number of vehicles with a solution has been stable for the last 3 iterations
-        * and that there has been at least 7 iterations
-
-        It is then assumed that the buses are correctly sized.
+        Mass, power and energy storage are coupled. Bounded sizing iterations
+        converge on driving mass per active vehicle/sample at a relative
+        tolerance of 0.1%. Propulsion shares retain their annual input values;
+        no energy-target adjustment is applied.
 
         :returns: Does not return anything. Modifies ``self.array`` in place.
         """
 
-        arr = np.array([])
-
-        # whether the vehicles are compliant
+        # Actual driving-mass compliance is evaluated after sizing.
         self["is_compliant"] = True
         # whether the technology is available for the given year
         self["is_available"] = True
@@ -107,20 +102,6 @@ class BusModel(VehicleModel):
             self.set_power_battery_properties()
             self.set_vehicle_masses()
 
-            if self.energy_target is not None:
-                if len(self.array.year.values) > 1:
-                    # if there are vehicles after 2020,
-                    # we need to ensure CO2 standards compliance
-                    # return an array with non-compliant vehicles
-                    non_compliant_vehicles = self.adjust_combustion_power_share()
-                    arr = np.append(arr, non_compliant_vehicles.sum())
-                else:
-                    arr = np.append(arr, [0])
-                    non_compliant_vehicles = 0
-            else:
-                arr = np.append(arr, [0])
-                non_compliant_vehicles = 0
-
         self["capacity utilization"] = np.clip(
             (self["average passengers"] / self["initial passengers capacity"]), 0, 1
         )
@@ -144,27 +125,11 @@ class BusModel(VehicleModel):
             "'X' BEV with driving mass when fully "
             "occupied superior to the permissible gross weight."
         )
-        print("'*' buses that do not comply wih energy reduction target.")
         print("'/' vehicles not available for the specified year or charging strategy.")
         print(
             "'O' electric vehicles that do not have "
             "enough time to charge batteries overnight."
         )
-
-        # If the number of remaining non-compliant vehicles is not zero, then
-        if len([y for y in self.array.year.values if y > 2020]) > 0:
-            l_pwt = [
-                p for p in self.array.powertrain.values if p in ["ICEV-d", "ICEV-g"]
-            ]
-
-            if len(l_pwt) > 0:
-                self.array.loc[
-                    dict(
-                        powertrain=l_pwt,
-                        parameter="is_compliant",
-                        year=[y for y in self.array.year.values if y > 2020],
-                    )
-                ] *= np.logical_not(non_compliant_vehicles).astype(int)
 
         # Display the reference, or the first available sample after selection.
         display_value = (
@@ -191,19 +156,6 @@ class BusModel(VehicleModel):
                             size=s,
                         ).values,
                         1,
-                    )
-
-                    # indicate vehicles that do not comply with energy target
-                    val = np.where(
-                        self.array.sel(
-                            parameter="is_compliant",
-                            powertrain=pt,
-                            year=y,
-                            value=display_value,
-                            size=s,
-                        ).values,
-                        val,
-                        [f"{v}*" for v in val],
                     )
 
                     # indicate vehicles that have schedule issues
@@ -248,80 +200,6 @@ class BusModel(VehicleModel):
 
                 t.add_row(row + vals)
         print(t)
-
-    def adjust_combustion_power_share(self):
-        """
-        If the exhaust CO2 emissions exceed the targets defined in `self.emission_target`,
-        compared to 2020, we decrement the power supply share of the combustion engine.
-
-        :returns: `is_compliant`, whether all vehicles are compliant or not.
-        """
-
-        list_target_years = [2020] + list(self.energy_target.keys())
-        list_target_vals = [1] + list(self.energy_target.values())
-        # years under target
-        actual_years = [y for y in self.array.year.values if y > 2020]
-
-        if len(actual_years) > 0:
-            l_pwt = [
-                p for p in self.array.powertrain.values if p in ["ICEV-d", "ICEV-g"]
-            ]
-
-            if len(l_pwt) > 0:
-                fc = self.array.loc[:, l_pwt, "TtW energy", :].interp(
-                    year=list_target_years, kwargs={"fill_value": "extrapolate"}
-                )
-
-                fc[:, :, :, :] = (
-                    fc[:, :, 0, :].values
-                    * np.array(list_target_vals).reshape(-1, 1, 1, 1)
-                ).transpose(1, 2, 0, 3)
-
-                years_after_last_target = [
-                    y for y in actual_years if y > list_target_years[-1]
-                ]
-
-                list_years = list_target_years + actual_years
-                list_years = list(set(list_years))
-                fc = fc.interp(year=list_years, kwargs={"fill_value": "extrapolate"})
-
-                if (
-                    len(years_after_last_target) > 0
-                    and list_target_years[-1] in fc.year.values
-                ):
-                    fc.loc[dict(year=years_after_last_target)] = fc.loc[
-                        dict(year=list_target_years[-1])
-                    ].values[:, :, None, :]
-
-                fc = fc.loc[dict(year=actual_years)]
-
-                arr = (
-                    fc.values
-                    < self.array.loc[:, l_pwt, "TtW energy", actual_years].values
-                )
-
-                if arr.sum() > 0:
-                    new_shares = self.array.loc[
-                        dict(
-                            powertrain=l_pwt,
-                            parameter="combustion power share",
-                            year=actual_years,
-                        )
-                    ] - (arr * 0.04)
-
-                    self.array.loc[
-                        dict(
-                            powertrain=l_pwt,
-                            parameter="combustion power share",
-                            year=actual_years,
-                        )
-                    ] = np.clip(new_shares, 0.6, 1)
-
-                return arr
-            else:
-                return np.array([])
-        else:
-            return np.array([])
 
     def check_compliance_of_buses(self):
         # Indicate vehicles not available before 2020

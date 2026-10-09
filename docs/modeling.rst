@@ -529,6 +529,13 @@ The energy consumption model is similar to that of passenger cars: the sum of th
 resistances at the wheel is calculated, after which friction-induced losses along the drivetrain are
 considered to obtain the energy required at the tank level.
 
+The combustion/electric power split follows the supplied annual vehicle
+parameters. The former automatic energy-target adjustment has been removed
+completely: selecting additional model years does not hybridize diesel or gas
+buses. The inherited ``energy_target`` constructor argument has no effect on
+bus calculations. See :ref:`bus-year-selection` for migration and consistency
+checks across year selections.
+
 The original study used VECTO simulations to calibrate engine and transmission
 efficiency for diesel buses; gas-bus corrections were derived separately. Similar to the modeling of delivery, medium- and heavy-duty trucks,
 the relation between the efficiency of the drivetrain components (i.e., engine, gearbox, and axle)
