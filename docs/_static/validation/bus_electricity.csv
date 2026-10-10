@@ -1,0 +1,7 @@
+label,first,second,observation_id,source_url,qualification,model_field
+"Manhattan
+held-out cycle",188.8347053209258,194.7391175900543,gillig_manhattan,https://psta.net/wp-content/uploads/2025/11/gillig-technical-qualifications-no-price.pdf,screening,model_charging
+"OCBC
+used for auxiliary fit",140.98912351865107,146.2209130231604,gillig_ocbc,https://psta.net/wp-content/uploads/2025/11/gillig-technical-qualifications-no-price.pdf,screening,model_charging
+"HD-UDDS
+used for auxiliary fit",130.052990535274,134.64149496921672,gillig_hd-udds,https://psta.net/wp-content/uploads/2025/11/gillig-technical-qualifications-no-price.pdf,screening,model_charging

@@ -3,6 +3,14 @@
 Modeling
 ========
 
+.. note::
+
+   This chapter combines equations used by the current model with source tables
+   and figures from the original studies. Historical tables are retained as
+   evidence of those studies, not as a complete listing of current defaults.
+   Use the installed input tables for current parameter values, and
+   :doc:`validation_examples` for dated comparisons and their limitations.
+
 This document describes the ``carculator_bus`` model, assumptions
 and inventories as exhaustively as possible.
 
@@ -156,7 +164,7 @@ The following components are common to all powertrains:
    +===========================+======================+===========================+================================+================================+================================+=============================+=============================+
    |                           | Type                 | rigid, 2 axles            | rigid, 2 axles                 | articulated, 3 axles           | rigid, 3 axles                 | rigid, 2 axles              | rigid, 3 axles              |
    +---------------------------+----------------------+---------------------------+--------------------------------+--------------------------------+--------------------------------+-----------------------------+-----------------------------+
-   | in kilograms              | Gross weight         | 12'0000                   | 19'000                         | 28'000                         | 26'000                         | 19'000                      | 26'000                      |
+   | in kilograms              | Gross weight         | 12'000                    | 19'000                         | 28'000                         | 26'000                         | 19'000                      | 26'000                      |
    +---------------------------+----------------------+---------------------------+--------------------------------+--------------------------------+--------------------------------+-----------------------------+-----------------------------+
    | Powertrain                | Engine system        | 399                       | 931                            | 1'121                          | 1'121                          | 1'121                       | 1'200                       |
    +---------------------------+----------------------+---------------------------+--------------------------------+--------------------------------+--------------------------------+-----------------------------+-----------------------------+
@@ -422,18 +430,18 @@ daylight average temperature series are used.
 
     *Figure 3: Auxiliary energy consumption for different countries, based on their yearly average daytime temperature*
 
-But does this matter compared to the traction energy?
+The following figure compares auxiliary and traction energy.
 
 :ref:`Figure 4 <figure-4>` shows the energy consumption [1]_ of a 13m-long single-deck bus for urban and
 intercity use, including the traction energy. The values are normalized to one vehicle-
 kilometer as a function of the ambient temperature.
 
-It seems that the power draw from the HVAC system can potentially be an issue, but
-primarily for urban electric buses and, to a lesser extent, inter-city electric buses (provided
-they are a viable option, which they are not currently). It seems auxiliary energy represents
-25% of the tank-to-wheel energy consumption in normal conditions and goes up to 30% and
-40% in very cold and hot conditions, respectively. This is as much energy not available for
-traction purposes (i.e., which directly affects the vehicle’s range autonomy).
+In this historical example, auxiliaries account for about 25% of energy use
+under the central temperature assumptions, rising to about 30% in cold and 40%
+in hot conditions. These fractions depend on the vehicle, cycle and thermal
+inputs; they are not fixed percentages in the code. Higher auxiliary demand
+reduces the energy available for propulsion and therefore range. The figure
+does not establish the current feasibility of all electric coach designs.
 
 .. _figure-4:
 
@@ -1050,20 +1058,21 @@ The parameters for the different charging stations modeled are presented in :ref
 
 Finding solutions and validation
 --------------------------------
-Very much like ``carculator`` and ``carculator_truck``, ``carculator_bus`` iterates until:
+Bus sizing iterates until **driving mass** changes by less than 0.1% for
+each active vehicle, year and sample. The iteration count is bounded by
+``max_iterations``; nonfinite values or failure to converge raise an error.
 
-* the change in curb mass of the vehicles between two iterations is below 1%
+After sizing, ``is_compliant`` compares actual driving mass with gross mass.
+The separate ``peak_passenger_capacity_sufficient`` diagnostic reports whether
+the bus could carry 50% more passengers than its average occupancy; it is not
+the meaning of ``is_compliant``. Availability rules also exclude unsupported
+size/powertrain combinations, such as coach opportunity charging.
 
-All while considering the **following constraints**:
-
-* For **all buses**, the driving mass when fully occupied cannot be superior to the gross
-  mass of the vehicle (this is specifically relevant for BEV buses)
-* For all buses, but particularly relevant for electric buses, the curb mass should be so
-  low as to allow a 50% increase in the average number of passengers (i.e., during
-  peak hours), all while staying under the permissible gross weight limit.
-* **Coach buses** cannot be considered for opportunity and in-motion charging strategies.
-* For **BEV-depot** buses, the capacity of the battery must be so that it gives enough
-  time to charge it overnight to be ready for the next shift.
+A completed run does not certify a charging timetable. In particular, the legacy
+``check_compliance_of_buses`` routine is not called by ``set_all()``. Assess the
+assumed overnight charging window and service requirements separately when
+using a depot BEV for a specific route. The automatic energy-reduction adjustment
+has been removed completely; see :doc:`validity` for year-selection consistency.
 
 Validation
 ----------
